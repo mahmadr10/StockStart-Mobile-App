@@ -3,10 +3,11 @@
 // PURPOSE: Creates the database, the table, and all functions
 //          to get/save/update stocks.
 // ============================================================
-
+import 'package:flutter/material.dart';
+import 'dart:async';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
-import '../../models/stock.dart';
+import 'package:stockstart/models/stock.dart';
 
 class DatabaseHelper {
   // Singleton pattern — only ONE instance of the database exists
