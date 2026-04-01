@@ -5,8 +5,8 @@
 // ============================================================
 
 import 'package:flutter/material.dart';
-import '../../models/stock.dart';
-import '../../utils/app_theme.dart';
+import 'package:stockstart/models/stock.dart';
+import 'package:stockstart/utils/app_theme.dart';
 
 class StockCard extends StatelessWidget {
   final Stock stock;
