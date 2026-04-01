@@ -5,7 +5,11 @@
 // ============================================================
 
 import 'package:flutter/material.dart';
-import '../../utils/app_theme.dart';
+import 'package:stockstart/database/database_helper.dart';
+import 'package:stockstart/models/stock.dart';
+import 'package:stockstart/utils/app_theme.dart';
+import 'package:stockstart/widgets/bottom_nav.dart';
+import 'package:stockstart/widgets/stock_card.dart';
 
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
