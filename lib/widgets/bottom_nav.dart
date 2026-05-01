@@ -15,38 +15,43 @@ class BottomNav extends StatelessWidget {
   Widget build(BuildContext context) {
     return BottomNavigationBar(
       currentIndex: currentIndex,
-      selectedItemColor: AppColors.green,
-      unselectedItemColor: AppColors.greyLight,
-      backgroundColor: AppColors.white,
-      type: BottomNavigationBarType.fixed, // shows all labels
+      selectedItemColor: AppTheme.primary,
+      unselectedItemColor: AppTheme.textSecondary,
+      backgroundColor: AppTheme.surface,
+      type: BottomNavigationBarType.fixed,
       selectedFontSize: 10,
       unselectedFontSize: 10,
       onTap: (index) {
-        // Navigate based on which tab is tapped
+        if (index == currentIndex) return;
         switch (index) {
           case 0:
             Navigator.pushNamedAndRemoveUntil(context, '/home', (_) => false);
             break;
           case 1:
-            Navigator.pushNamed(context, '/watchlist');
+            Navigator.pushNamed(context, '/home');
             break;
           case 2:
-          // Your friend's screen — /learn
+            Navigator.pushNamed(context, '/home');
             break;
           case 3:
-          // Your friend's screen — /notifications
+            Navigator.pushNamed(context, '/home');
             break;
           case 4:
-          // Your friend's screen — /profile
+            Navigator.pushNamed(context, '/home');
             break;
         }
       },
       items: const [
-        BottomNavigationBarItem(icon: Icon(Icons.home_outlined),         label: 'Home'),
-        BottomNavigationBarItem(icon: Icon(Icons.bookmark_outline),      label: 'Watchlist'),
-        BottomNavigationBarItem(icon: Icon(Icons.school_outlined),       label: 'Learn'),
-        BottomNavigationBarItem(icon: Icon(Icons.notifications_outlined),label: 'Alerts'),
-        BottomNavigationBarItem(icon: Icon(Icons.person_outline),        label: 'Profile'),
+        BottomNavigationBarItem(
+            icon: Icon(Icons.home_outlined), label: 'Home'),
+        BottomNavigationBarItem(
+            icon: Icon(Icons.bookmark_outline), label: 'Watchlist'),
+        BottomNavigationBarItem(
+            icon: Icon(Icons.school_outlined), label: 'Learn'),
+        BottomNavigationBarItem(
+            icon: Icon(Icons.notifications_outlined), label: 'Alerts'),
+        BottomNavigationBarItem(
+            icon: Icon(Icons.person_outline), label: 'Profile'),
       ],
     );
   }

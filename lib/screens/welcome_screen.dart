@@ -1,131 +1,152 @@
-// ============================================================
-// FILE: lib/screens/welcome_screen.dart
-// PURPOSE: SCREEN 1 — First screen users see.
-//          Log In / Sign Up / Continue as Guest buttons.
-// ============================================================
-
+// lib/screens/welcome_screen.dart
 import 'package:flutter/material.dart';
-import 'package:stockstart/database/database_helper.dart';
-import 'package:stockstart/models/stock.dart';
-import 'package:stockstart/utils/app_theme.dart';
-import 'package:stockstart/widgets/bottom_nav.dart';
-import 'package:stockstart/widgets/stock_card.dart';
+import '../utils/app_theme.dart';
 
-class WelcomeScreen extends StatelessWidget {
+class WelcomeScreen extends StatefulWidget {
   const WelcomeScreen({super.key});
+  @override
+  State<WelcomeScreen> createState() => _WelcomeScreenState();
+}
+
+class _WelcomeScreenState extends State<WelcomeScreen>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _ctrl;
+  late Animation<double>   _fade;
+  late Animation<Offset>   _slide;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl  = AnimationController(vsync: this,
+        duration: const Duration(milliseconds: 900));
+    _fade  = CurvedAnimation(parent: _ctrl, curve: Curves.easeOut);
+    _slide = Tween<Offset>(
+        begin: const Offset(0, 0.12), end: Offset.zero)
+        .animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeOut));
+    _ctrl.forward();
+  }
+
+  @override
+  void dispose() { _ctrl.dispose(); super.dispose(); }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.white,
+      backgroundColor: AppTheme.background,
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 32),
-          child: Column(
-            children: [
-              const Spacer(), // Pushes content to vertical center
+        child: FadeTransition(
+          opacity: _fade,
+          child: SlideTransition(
+            position: _slide,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 28),
+              child: Column(
+                children: [
+                  const Spacer(flex: 2),
 
-              // ── LOGO ──────────────────────────────────────────
-              Container(
-                width: 80,
-                height: 80,
-                decoration: BoxDecoration(
-                  color: AppColors.green,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: const Icon(
-                  Icons.trending_up,
-                  color: Colors.white,
-                  size: 44,
-                ),
-              ),
-              const SizedBox(height: 20),
-
-              // ── APP NAME ──────────────────────────────────────
-              const Text(
-                'StockStart',
-                style: TextStyle(
-                  fontSize: 30,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.dark,
-                ),
-              ),
-              const SizedBox(height: 8),
-
-              // ── TAGLINE ───────────────────────────────────────
-              const Text(
-                'Learn Stocks the Simple Way',
-                style: TextStyle(
-                  fontSize: 15,
-                  color: AppColors.grey,
-                ),
-              ),
-
-              const Spacer(),
-
-              // ── LOG IN BUTTON (filled green) ──────────────────
-              ElevatedButton(
-                onPressed: () {
-                  // Goes to Home (in real app this would check credentials)
-                  Navigator.pushReplacementNamed(context, '/home');
-                },
-                child: const Text('Log In'),
-              ),
-              const SizedBox(height: 12),
-
-              // ── SIGN UP BUTTON (outlined) ─────────────────────
-              OutlinedButton(
-                onPressed: () {
-                  // Goes to Home (in real app this would create account)
-                  Navigator.pushReplacementNamed(context, '/home');
-                },
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: AppColors.green,
-                  side: const BorderSide(color: AppColors.green, width: 2),
-                  minimumSize: const Size(double.infinity, 52),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
+                  // ── Logo ──
+                  Container(
+                    width: 84, height: 84,
+                    decoration: BoxDecoration(
+                      color: AppTheme.primary.withOpacity(0.12),
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(
+                          color: AppTheme.primary.withOpacity(0.4),
+                          width: 1.5),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppTheme.primary.withOpacity(0.2),
+                          blurRadius: 24, spreadRadius: 2,
+                        ),
+                      ],
+                    ),
+                    child: const Center(
+                        child: Text('📈', style: TextStyle(fontSize: 40))),
                   ),
-                  textStyle: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                child: const Text('Sign Up'),
-              ),
-              const SizedBox(height: 16),
+                  const SizedBox(height: 22),
 
-              // ── CONTINUE AS GUEST (text link) ─────────────────
-              GestureDetector(
-                onTap: () {
-                  Navigator.pushReplacementNamed(context, '/home');
-                },
-                child: const Padding(
-                  padding: EdgeInsets.all(8),
-                  child: Text(
-                    'Continue as Guest',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: AppColors.green,
-                      fontWeight: FontWeight.w500,
+                  const Text('StockStart',
+                      style: TextStyle(
+                          color: AppTheme.textPrimary,
+                          fontSize: 36,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: -1.2)),
+                  const SizedBox(height: 8),
+                  const Text('Learn Stocks. Trade Smart. Grow.',
+                      style: TextStyle(
+                          color: AppTheme.textSecondary, fontSize: 15)),
+
+                  const Spacer(flex: 2),
+
+                  // ── Feature pills ──
+                  Wrap(
+                    spacing: 8, runSpacing: 8,
+                    alignment: WrapAlignment.center,
+                    children: const [
+                      _Pill('📊  Live Market Data'),
+                      _Pill('🤖  AI Trend Prediction'),
+                      _Pill('💸  Demo Trading'),
+                      _Pill('📚  Daily Tips'),
+                    ],
+                  ),
+
+                  const Spacer(flex: 3),
+
+                  // ── CTA ──
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () =>
+                          Navigator.pushReplacementNamed(context, '/login'),
+                      child: const Text('Log In'),
                     ),
                   ),
-                ),
-              ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton(
+                      onPressed: () =>
+                          Navigator.pushReplacementNamed(context, '/signup'),
+                      child: const Text('Create Account'),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextButton(
+                    onPressed: () =>
+                        Navigator.pushReplacementNamed(context, '/home'),
+                    child: const Text('Continue as Guest'),
+                  ),
 
-              const SizedBox(height: 24),
-
-              // ── TERMS TEXT ────────────────────────────────────
-              const Text(
-                'By continuing, you agree to our Terms of Service and Privacy Policy.',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 11, color: AppColors.greyLight),
+                  const SizedBox(height: 20),
+                  const Text(
+                    'By continuing you agree to our Terms & Privacy Policy.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        color: AppTheme.textSecondary, fontSize: 11),
+                  ),
+                  const SizedBox(height: 16),
+                ],
               ),
-              const SizedBox(height: 16),
-            ],
+            ),
           ),
         ),
       ),
     );
   }
+}
+
+class _Pill extends StatelessWidget {
+  final String label;
+  const _Pill(this.label);
+  @override
+  Widget build(BuildContext context) => Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+      decoration: BoxDecoration(
+        color: AppTheme.surface,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppTheme.border),
+      ),
+      child: Text(label,
+          style: const TextStyle(
+              color: AppTheme.textSecondary, fontSize: 12)));
 }

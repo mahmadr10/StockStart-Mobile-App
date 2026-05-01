@@ -1,151 +1,125 @@
-// ============================================================
-// FILE: lib/screens/watchlist_screen.dart
-// PURPOSE: SCREEN 3 — Watchlist with Low / Medium / High Risk tabs.
-//          Loads filtered stocks from the database.
-// ============================================================
-
+// lib/screens/watchlist_screen.dart
 import 'package:flutter/material.dart';
-import 'package:stockstart/database/database_helper.dart';
-import 'package:stockstart/models/stock.dart';
-import 'package:stockstart/utils/app_theme.dart';
-import 'package:stockstart/widgets/bottom_nav.dart';
-import 'package:stockstart/widgets/stock_card.dart';
+import '../models/stock.dart';
+import '../services/database_service.dart';
+import '../utils/app_theme.dart';
+import '../widgets/stock_card.dart';
+import 'stock_detail_screen.dart';
 
 class WatchlistScreen extends StatefulWidget {
   const WatchlistScreen({super.key});
-
   @override
   State<WatchlistScreen> createState() => _WatchlistScreenState();
 }
 
 class _WatchlistScreenState extends State<WatchlistScreen> {
-  final db = DatabaseHelper.instance;
-
-  String _selectedRisk = 'Low'; // Currently selected tab
-  List<Stock> _stocks  = [];
-  bool _isLoading      = true;
+  String       _risk    = 'Low';
+  List<Stock>  _stocks  = [];
+  bool         _loading = true;
 
   @override
-  void initState() {
-    super.initState();
-    _loadStocks('Low'); // Load Low Risk tab by default
-  }
+  void initState() { super.initState(); _load('Low'); }
 
-  // Loads stocks from DB filtered by risk level
-  Future<void> _loadStocks(String risk) async {
-    setState(() => _isLoading = true);
-    final stocks = await db.getWatchlistByRisk(risk);
-    setState(() {
-      _stocks = stocks;
-      _selectedRisk = risk;
-      _isLoading = false;
-    });
+  Future<void> _load(String risk) async {
+    setState(() { _loading = true; _risk = risk; });
+    final stocks = await DatabaseService.getWatchlistByRisk(risk);
+    if (!mounted) return;
+    setState(() { _stocks = stocks; _loading = false; });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.pageBg,
-
-      // ── APP BAR ────────────────────────────────────────────────
-      appBar: AppBar(
-        title: const Text('My Watchlist'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
-
-      // ── BODY ───────────────────────────────────────────────────
+      backgroundColor: AppTheme.background,
+      appBar: AppBar(title: const Text('My Watchlist')),
       body: Column(
         children: [
-
-          // ── RISK TABS ─────────────────────────────────────────
+          // Risk tabs
           Container(
-            color: AppColors.white,
+            color: AppTheme.surface,
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             child: Row(
               children: [
-                _buildTab('Low'),
+                _tab('Low'),
                 const SizedBox(width: 8),
-                _buildTab('Medium'),
+                _tab('Medium'),
                 const SizedBox(width: 8),
-                _buildTab('High'),
+                _tab('High'),
               ],
             ),
           ),
-
-          // ── STOCK LIST ────────────────────────────────────────
+          // List
           Expanded(
-            child: _isLoading
-                ? const Center(child: CircularProgressIndicator(color: AppColors.green))
+            child: _loading
+                ? const Center(
+                child: CircularProgressIndicator(
+                    color: AppTheme.primary))
                 : _stocks.isEmpty
                 ? Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.inbox_outlined,
-                      size: 48, color: AppColors.greyLight),
+                  Icon(Icons.bookmark_border_rounded,
+                      size: 52,
+                      color: AppTheme.textSecondary
+                          .withOpacity(0.5)),
                   const SizedBox(height: 12),
                   Text(
-                    'No $_selectedRisk Risk stocks\nin your watchlist',
+                    'No $_risk Risk stocks\nin your watchlist yet.',
                     textAlign: TextAlign.center,
                     style: const TextStyle(
-                        color: AppColors.greyLight, fontSize: 14),
+                        color: AppTheme.textSecondary,
+                        fontSize: 14),
                   ),
                 ],
               ),
             )
-                : ListView.builder(
-              padding: const EdgeInsets.all(12),
-              itemCount: _stocks.length,
-              itemBuilder: (context, index) {
-                return StockCard(
-                  stock: _stocks[index],
-                  onTap: () {
-                    // TODO: Navigate to stock detail screen
-                  },
-                );
-              },
+                : RefreshIndicator(
+              color: AppTheme.primary,
+              backgroundColor: AppTheme.surface,
+              onRefresh: () => _load(_risk),
+              child: ListView.builder(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                itemCount: _stocks.length,
+                itemBuilder: (_, i) => StockCard(
+                  stock: _stocks[i],
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => StockDetailScreen(
+                          stock: _stocks[i]),
+                    ),
+                  ).then((_) => _load(_risk)),
+                ),
+              ),
             ),
           ),
         ],
       ),
-
-      // ── BOTTOM NAV ─────────────────────────────────────────────
-      bottomNavigationBar: const BottomNav(currentIndex: 1),
     );
   }
 
-  // Builds a single risk tab button
-  Widget _buildTab(String risk) {
-    final isActive = _selectedRisk == risk;
-    final color = switch (risk) {
-      'Low'    => AppColors.green,
-      'Medium' => AppColors.amber,
-      _        => AppColors.red,
-    };
-
+  Widget _tab(String risk) {
+    final active = _risk == risk;
+    final color  = AppTheme.riskColor(risk);
     return Expanded(
       child: GestureDetector(
-        onTap: () => _loadStocks(risk),
+        onTap: () => _load(risk),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           padding: const EdgeInsets.symmetric(vertical: 10),
           decoration: BoxDecoration(
-            color: isActive ? color.withOpacity(0.12) : AppColors.greyBg,
-            borderRadius: BorderRadius.circular(8),
-            border: isActive
-                ? Border.all(color: color, width: 1.5)
-                : null,
+            color:  active ? color.withOpacity(0.15) : AppTheme.surface,
+            borderRadius: BorderRadius.circular(10),
+            border: active ? Border.all(color: color) : null,
           ),
           child: Text(
             '$risk Risk',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 13,
-              fontWeight: FontWeight.bold,
-              color: isActive ? color : AppColors.grey,
+              fontWeight: FontWeight.w700,
+              color: active ? color : AppTheme.textSecondary,
             ),
           ),
         ),
