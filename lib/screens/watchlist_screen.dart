@@ -13,9 +13,9 @@ class WatchlistScreen extends StatefulWidget {
 }
 
 class _WatchlistScreenState extends State<WatchlistScreen> {
-  String       _risk    = 'Low';
-  List<Stock>  _stocks  = [];
-  bool         _loading = true;
+  String      _risk    = 'Low';
+  List<Stock> _stocks  = [];
+  bool        _loading = true;
 
   @override
   void initState() { super.initState(); _load('Low'); }
@@ -52,8 +52,7 @@ class _WatchlistScreenState extends State<WatchlistScreen> {
           Expanded(
             child: _loading
                 ? const Center(
-                child: CircularProgressIndicator(
-                    color: AppTheme.primary))
+                child: CircularProgressIndicator(color: AppTheme.primary))
                 : _stocks.isEmpty
                 ? Center(
               child: Column(
@@ -61,15 +60,13 @@ class _WatchlistScreenState extends State<WatchlistScreen> {
                 children: [
                   Icon(Icons.bookmark_border_rounded,
                       size: 52,
-                      color: AppTheme.textSecondary
-                          .withOpacity(0.5)),
+                      color: AppTheme.textSecondary.withOpacity(0.5)),
                   const SizedBox(height: 12),
                   Text(
                     'No $_risk Risk stocks\nin your watchlist yet.',
                     textAlign: TextAlign.center,
                     style: const TextStyle(
-                        color: AppTheme.textSecondary,
-                        fontSize: 14),
+                        color: AppTheme.textSecondary, fontSize: 14),
                   ),
                 ],
               ),
@@ -86,8 +83,8 @@ class _WatchlistScreenState extends State<WatchlistScreen> {
                   onTap: () => Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => StockDetailScreen(
-                          stock: _stocks[i]),
+                      builder: (_) =>
+                          StockDetailScreen(stock: _stocks[i]),
                     ),
                   ).then((_) => _load(_risk)),
                 ),

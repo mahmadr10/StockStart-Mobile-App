@@ -1,9 +1,8 @@
 // lib/utils/app_theme.dart
 import 'package:flutter/material.dart';
 
-// ─── Colour tokens ────────────────────────────────────────────────────────────
 class AppTheme {
-  // Dark palette
+  // ── Dark palette ──
   static const Color primary       = Color(0xFF00E5A0);
   static const Color danger        = Color(0xFFFF4D6A);
   static const Color background    = Color(0xFF080B10);
@@ -16,7 +15,7 @@ class AppTheme {
   static const Color info          = Color(0xFF4DA8FF);
   static const Color accent        = Color(0xFF7C5CFF);
 
-  // Light palette
+  // ── Light palette ──
   static const Color lBackground    = Color(0xFFF5F7FA);
   static const Color lSurface       = Color(0xFFFFFFFF);
   static const Color lSurface2      = Color(0xFFEFF2F6);
@@ -24,7 +23,6 @@ class AppTheme {
   static const Color lTextPrimary   = Color(0xFF0D1117);
   static const Color lTextSecondary = Color(0xFF6B7A90);
 
-  // ── Dark ThemeData ──
   static ThemeData get darkTheme => _buildTheme(
     brightness: Brightness.dark,
     scaffoldBg: background,
@@ -35,7 +33,6 @@ class AppTheme {
     inputFill: surface,
   );
 
-  // ── Light ThemeData ──
   static ThemeData get lightTheme => _buildTheme(
     brightness: Brightness.light,
     scaffoldBg: lBackground,
@@ -109,18 +106,15 @@ class AppTheme {
           borderSide: const BorderSide(color: primary, width: 1.5),
         ),
         hintStyle: TextStyle(color: textSecondaryColor),
-        contentPadding:
-        const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: primary,
           foregroundColor: Colors.black,
           minimumSize: const Size(double.infinity, 54),
-          shape:
-          RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          textStyle:
-          const TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          textStyle: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
           elevation: 0,
         ),
       ),
@@ -129,10 +123,8 @@ class AppTheme {
           side: BorderSide(color: borderColor),
           foregroundColor: textPrimaryColor,
           minimumSize: const Size(double.infinity, 54),
-          shape:
-          RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          textStyle:
-          const TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          textStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
         ),
       ),
       textButtonTheme: TextButtonThemeData(
@@ -155,32 +147,25 @@ class AppTheme {
       snackBarTheme: SnackBarThemeData(
         backgroundColor: isDark ? surface2 : lSurface2,
         contentTextStyle: TextStyle(color: textPrimaryColor),
-        shape:
-        RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         behavior: SnackBarBehavior.floating,
       ),
       switchTheme: SwitchThemeData(
         thumbColor: WidgetStateProperty.resolveWith(
                 (s) => s.contains(WidgetState.selected) ? primary : null),
         trackColor: WidgetStateProperty.resolveWith(
-                (s) => s.contains(WidgetState.selected)
-                ? primary.withOpacity(0.4)
-                : null),
+                (s) => s.contains(WidgetState.selected) ? primary.withOpacity(0.4) : null),
       ),
       dialogTheme: DialogThemeData(
         backgroundColor: surfaceColor,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         titleTextStyle: TextStyle(
-            color: textPrimaryColor,
-            fontSize: 18,
-            fontWeight: FontWeight.w700),
-        contentTextStyle:
-        TextStyle(color: textSecondaryColor, fontSize: 14),
+            color: textPrimaryColor, fontSize: 18, fontWeight: FontWeight.w700),
+        contentTextStyle: TextStyle(color: textSecondaryColor, fontSize: 14),
       ),
     );
   }
 
-  // ── Helpers ──
   static Color riskColor(String risk) {
     switch (risk) {
       case 'Low':    return primary;
@@ -190,8 +175,7 @@ class AppTheme {
     }
   }
 
-  static Color changeColor(double change) =>
-      change >= 0 ? primary : danger;
+  static Color changeColor(double change) => change >= 0 ? primary : danger;
 
   static String formatMarketCap(double? cap) {
     if (cap == null) return 'N/A';
@@ -202,7 +186,6 @@ class AppTheme {
   }
 }
 
-// ─── AppColors alias ──────────────────────────────────────────────────────────
 class AppColors {
   static const Color green     = AppTheme.primary;
   static const Color red       = AppTheme.danger;
@@ -215,16 +198,15 @@ class AppColors {
   static const Color amber     = AppTheme.warning;
 }
 
-// ─── Popular tickers ──────────────────────────────────────────────────────────
 const List<Map<String, String>> kPopularTickers = [
-  {'ticker': 'AAPL',  'name': 'Apple Inc.'},
-  {'ticker': 'NVDA',  'name': 'NVIDIA Corp.'},
-  {'ticker': 'MSFT',  'name': 'Microsoft Corp.'},
-  {'ticker': 'TSLA',  'name': 'Tesla Inc.'},
-  {'ticker': 'AMZN',  'name': 'Amazon.com'},
-  {'ticker': 'GOOGL', 'name': 'Alphabet Inc.'},
-  {'ticker': 'META',  'name': 'Meta Platforms'},
-  {'ticker': 'BRK-B', 'name': 'Berkshire Hathaway'},
-  {'ticker': 'COIN',  'name': 'Coinbase Global'},
-  {'ticker': 'PLTR',  'name': 'Palantir Tech.'},
+  {'ticker': 'AAPL',    'name': 'Apple Inc.'},
+  {'ticker': 'NVDA',    'name': 'NVIDIA Corp.'},
+  {'ticker': 'MSFT',    'name': 'Microsoft Corp.'},
+  {'ticker': 'TSLA',    'name': 'Tesla Inc.'},
+  {'ticker': 'AMZN',    'name': 'Amazon.com'},
+  {'ticker': 'GOOGL',   'name': 'Alphabet Inc.'},
+  {'ticker': 'META',    'name': 'Meta Platforms'},
+  {'ticker': 'BRK-B',   'name': 'Berkshire Hathaway'},
+  {'ticker': 'COIN',    'name': 'Coinbase Global'},
+  {'ticker': 'PLTR',    'name': 'Palantir Tech.'},
 ];

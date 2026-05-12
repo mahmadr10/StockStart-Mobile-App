@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../models/stock.dart';
 import '../utils/app_theme.dart';
 
-// ─── StockCard ────────────────────────────────────────────────────────────────
+// ── StockCard ────────────────────────────────────────────────────────────────
 class StockCard extends StatelessWidget {
   final Stock        stock;
   final VoidCallback? onTap;
@@ -19,8 +19,8 @@ class StockCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
-        padding: const EdgeInsets.all(14),
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: AppTheme.surface,
           borderRadius: BorderRadius.circular(14),
@@ -43,15 +43,14 @@ class StockCard extends StatelessWidget {
                       : stock.ticker,
                   style: TextStyle(
                     color: changeColor,
-                    fontSize: stock.ticker.length > 3 ? 9 : 11,
+                    fontSize: stock.ticker.length > 3 ? 10 : 12,
                     fontWeight: FontWeight.w800,
-                    letterSpacing: -0.5,
                   ),
                 ),
               ),
             ),
-            const SizedBox(width: 12),
-            // Name + status + risk
+            const SizedBox(width: 14),
+            // Name + status
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -61,11 +60,11 @@ class StockCard extends StatelessWidget {
                     style: const TextStyle(
                         color: AppTheme.textPrimary,
                         fontSize: 14,
-                        fontWeight: FontWeight.w600),
+                        fontWeight: FontWeight.w700),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 2),
+                  const SizedBox(height: 3),
                   Text(
                     stock.status,
                     style: const TextStyle(
@@ -74,7 +73,7 @@ class StockCard extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                   if (showRisk) ...[
-                    const SizedBox(height: 5),
+                    const SizedBox(height: 6),
                     RiskBadge(riskLevel: stock.riskLevel, small: true),
                   ],
                 ],
@@ -90,11 +89,11 @@ class StockCard extends StatelessWidget {
                   style: const TextStyle(
                       color: AppTheme.textPrimary,
                       fontSize: 15,
-                      fontWeight: FontWeight.w700),
+                      fontWeight: FontWeight.w800),
                 ),
                 const SizedBox(height: 4),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
                     color: changeColor.withOpacity(0.15),
                     borderRadius: BorderRadius.circular(6),
@@ -116,7 +115,7 @@ class StockCard extends StatelessWidget {
   }
 }
 
-// ─── RiskBadge ────────────────────────────────────────────────────────────────
+// ── Risk Badge ────────────────────────────────────────────────────────────────
 class RiskBadge extends StatelessWidget {
   final String riskLevel;
   final bool   small;
@@ -126,8 +125,7 @@ class RiskBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     final color = AppTheme.riskColor(riskLevel);
     return Container(
-      padding: EdgeInsets.symmetric(
-          horizontal: small ? 6 : 10, vertical: small ? 2 : 4),
+      padding: EdgeInsets.symmetric(horizontal: small ? 7 : 10, vertical: small ? 2 : 4),
       decoration: BoxDecoration(
         color: color.withOpacity(0.15),
         borderRadius: BorderRadius.circular(6),
@@ -144,7 +142,7 @@ class RiskBadge extends StatelessWidget {
   }
 }
 
-// ─── MetricTile ───────────────────────────────────────────────────────────────
+// ── MetricTile ───────────────────────────────────────────────────────────────
 class MetricTile extends StatelessWidget {
   final String  label;
   final String  value;
@@ -185,9 +183,7 @@ class MetricTile extends StatelessWidget {
             const SizedBox(height: 2),
             Text(delta!,
                 style: TextStyle(
-                    color: deltaPositive
-                        ? AppTheme.primary
-                        : AppTheme.danger,
+                    color: deltaPositive ? AppTheme.primary : AppTheme.danger,
                     fontSize: 11,
                     fontWeight: FontWeight.w600)),
           ],
@@ -197,13 +193,12 @@ class MetricTile extends StatelessWidget {
   }
 }
 
-// ─── SectionHeader ────────────────────────────────────────────────────────────
+// ── Section Header ────────────────────────────────────────────────────────────
 class SectionHeader extends StatelessWidget {
-  final String   title;
-  final String?  action;
+  final String title;
+  final String? action;
   final VoidCallback? onAction;
-  const SectionHeader(
-      {super.key, required this.title, this.action, this.onAction});
+  const SectionHeader({super.key, required this.title, this.action, this.onAction});
 
   @override
   Widget build(BuildContext context) {
@@ -232,16 +227,12 @@ class SectionHeader extends StatelessWidget {
   }
 }
 
-// ─── DailyTipCard ─────────────────────────────────────────────────────────────
+// ── Daily Tip Card ─────────────────────────────────────────────────────────────
 class DailyTipCard extends StatelessWidget {
   final String title;
   final String body;
   final String category;
-  const DailyTipCard(
-      {super.key,
-        required this.title,
-        required this.body,
-        required this.category});
+  const DailyTipCard({super.key, required this.title, required this.body, required this.category});
 
   @override
   Widget build(BuildContext context) {
@@ -250,10 +241,7 @@ class DailyTipCard extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [
-            AppTheme.primary.withOpacity(0.15),
-            AppTheme.info.withOpacity(0.08)
-          ],
+          colors: [AppTheme.primary.withOpacity(0.15), AppTheme.info.withOpacity(0.08)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -297,24 +285,21 @@ class DailyTipCard extends StatelessWidget {
   }
 }
 
-// ─── ShimmerCard ──────────────────────────────────────────────────────────────
+// ── Shimmer Card ──────────────────────────────────────────────────────────────
 class ShimmerCard extends StatefulWidget {
   const ShimmerCard({super.key});
   @override
   State<ShimmerCard> createState() => _ShimmerCardState();
 }
 
-class _ShimmerCardState extends State<ShimmerCard>
-    with SingleTickerProviderStateMixin {
+class _ShimmerCardState extends State<ShimmerCard> with SingleTickerProviderStateMixin {
   late AnimationController _ctrl;
   late Animation<double>   _anim;
 
   @override
   void initState() {
     super.initState();
-    _ctrl = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 1100))
-      ..repeat(reverse: true);
+    _ctrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 1100))..repeat(reverse: true);
     _anim = Tween(begin: 0.3, end: 0.7).animate(_ctrl);
   }
 

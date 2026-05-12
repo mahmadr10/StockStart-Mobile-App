@@ -30,6 +30,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _load() async {
+    if (!mounted) return;
     setState(() { _loading = true; _searching = false; });
     _searchCtrl.clear();
     try {
@@ -58,7 +59,7 @@ class _HomeScreenState extends State<HomeScreen> {
             await DatabaseService.upsertStock(s.copyWith(isInWatchlist: true));
           }
           final updatedWatchlist = await DatabaseService.getWatchlistStocks();
-          setState(() => _watchlist = updatedWatchlist);
+          if (mounted) setState(() => _watchlist = updatedWatchlist);
         }
       }
     } catch (e) {
@@ -92,7 +93,6 @@ class _HomeScreenState extends State<HomeScreen> {
       if (!mounted) return;
       
       if (stock != null) {
-        // Keep the watchlist status if it exists locally
         final existing = _allStocks.where((s) => s.ticker == ticker).toList();
         final isWatched = existing.isNotEmpty ? existing.first.isInWatchlist : false;
         
@@ -101,12 +101,10 @@ class _HomeScreenState extends State<HomeScreen> {
         
         setState(() { 
           _filtered = [updatedStock]; 
-          // Update allStocks so the change is reflected immediately
           int idx = _allStocks.indexWhere((s) => s.ticker == ticker);
           if(idx != -1) _allStocks[idx] = updatedStock; else _allStocks.add(updatedStock);
         });
       } else {
-        // Fallback to local if live fetch fails
         final local = _allStocks.where((s) => s.ticker == ticker).toList();
         if (local.isNotEmpty) {
           setState(() { _filtered = local; });
@@ -139,8 +137,7 @@ class _HomeScreenState extends State<HomeScreen> {
         title: const Text('StockStart'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh_rounded,
-                color: AppTheme.textSecondary),
+            icon: const Icon(Icons.refresh_rounded, color: AppTheme.textSecondary),
             onPressed: _load,
             tooltip: 'Refresh',
           ),
@@ -151,11 +148,9 @@ class _HomeScreenState extends State<HomeScreen> {
         backgroundColor: AppTheme.surface,
         onRefresh: _load,
         child: _loading
-            ? ListView(
-            children: List.generate(5, (_) => const ShimmerCard()))
+            ? ListView(children: List.generate(5, (_) => const ShimmerCard()))
             : CustomScrollView(
           slivers: [
-            // ── Search bar ──
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
@@ -167,8 +162,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   style: const TextStyle(color: AppTheme.textPrimary),
                   decoration: InputDecoration(
                     hintText: 'Search ticker (e.g. AAPL) and press Enter',
-                    prefixIcon: const Icon(Icons.search_rounded,
-                        color: AppTheme.textSecondary),
+                    prefixIcon: const Icon(Icons.search_rounded, color: AppTheme.textSecondary),
                     suffixIcon: _searching
                         ? (_fetchingLive
                         ? const Padding(
@@ -176,20 +170,13 @@ class _HomeScreenState extends State<HomeScreen> {
                         child: SizedBox(
                           width: 18,
                           height: 18,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: AppTheme.primary,
-                          ),
+                          child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.primary),
                         ))
                         : IconButton(
-                        icon: const Icon(Icons.close_rounded,
-                            color: AppTheme.textSecondary),
+                        icon: const Icon(Icons.close_rounded, color: AppTheme.textSecondary),
                         onPressed: () {
                           _searchCtrl.clear();
-                          setState(() {
-                            _searching = false;
-                            _filtered  = [];
-                          });
+                          setState(() { _searching = false; _filtered = []; });
                         }))
                         : null,
                   ),
@@ -197,7 +184,6 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
 
-            // ── SEARCH RESULTS ──
             if (_searching) ...[
               SliverToBoxAdapter(
                 child: Padding(
@@ -206,8 +192,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     _filtered.isEmpty && !_fetchingLive
                         ? 'No results found'
                         : (_fetchingLive ? 'Fetching live data...' : '${_filtered.length} result(s)'),
-                    style: const TextStyle(
-                        color: AppTheme.textSecondary, fontSize: 13),
+                    style: const TextStyle(color: AppTheme.textSecondary, fontSize: 13),
                   ),
                 ),
               ),
@@ -221,7 +206,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ] else ...[
-              // ── DAILY TIP ──
               if (_tip != null)
                 SliverToBoxAdapter(
                   child: Padding(
@@ -234,7 +218,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
 
-              // ── WATCHLIST PREVIEW ──
               SliverToBoxAdapter(
                 child: SectionHeader(
                   title:    'Watchlist Preview',
@@ -247,9 +230,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Padding(
                     padding: EdgeInsets.fromLTRB(16, 0, 16, 8),
                     child: Text('No stocks in watchlist yet.',
-                        style: TextStyle(
-                            color: AppTheme.textSecondary,
-                            fontSize: 13)),
+                        style: TextStyle(color: AppTheme.textSecondary, fontSize: 13)),
                   ),
                 )
               else
@@ -259,14 +240,11 @@ class _HomeScreenState extends State<HomeScreen> {
                       stock: _watchlist[i],
                       onTap: () => _openDetail(_watchlist[i]),
                     ),
-                    childCount:
-                    _watchlist.length > 5 ? 5 : _watchlist.length,
+                    childCount: _watchlist.length > 5 ? 5 : _watchlist.length,
                   ),
                 ),
 
-              // ── RISK CATEGORIES ──
-              const SliverToBoxAdapter(
-                  child: SectionHeader(title: 'Risk Categories')),
+              const SliverToBoxAdapter(child: SectionHeader(title: 'Risk Categories')),
               SliverToBoxAdapter(child: _buildRiskTabs()),
               const SliverToBoxAdapter(child: SizedBox(height: 24)),
             ],
@@ -293,13 +271,9 @@ class _HomeScreenState extends State<HomeScreen> {
             height: 280,
             child: TabBarView(
               children: ['Low', 'Medium', 'High'].map((risk) {
-                final stocks =
-                _allStocks.where((s) => s.riskLevel == risk).toList();
+                final stocks = _allStocks.where((s) => s.riskLevel == risk).toList();
                 if (stocks.isEmpty) {
-                  return Center(
-                      child: Text('No $risk risk stocks',
-                          style: const TextStyle(
-                              color: AppTheme.textSecondary)));
+                  return Center(child: Text('No $risk risk stocks', style: const TextStyle(color: AppTheme.textSecondary)));
                 }
                 return ListView.builder(
                   padding: const EdgeInsets.only(top: 4),

@@ -1,8 +1,8 @@
 // lib/screens/profile_screen.dart
 import 'package:flutter/material.dart';
 import '../utils/app_theme.dart';
-import '../theme_provider.dart';
 import '../main.dart';
+import '../services/database_service.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -14,9 +14,38 @@ class _ProfileScreenState extends State<ProfileScreen> {
   bool _notificationsEnabled = true;
   bool _learningReminders    = true;
 
-  static const double _learningProgress = 0.75;
+  int    _totalXp         = 0;
+  int    _level           = 1;
+  int    _lessonsCompleted = 0;
+  final int _totalLessons = 10;
 
-  bool get _darkModeEnabled => ThemeProvider().isDark;
+  bool get _darkModeEnabled => StockStartApp.of(context)?.isDark ?? true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProgress();
+  }
+
+  Future<void> _loadProgress() async {
+    try {
+      final xp   = await DatabaseService.getLearnXp();
+      final done = await DatabaseService.getDoneLessons();
+      if (!mounted) return;
+      setState(() {
+        _totalXp          = xp;
+        _level            = (xp ~/ 100).clamp(1, 9);
+        _lessonsCompleted = done.length;
+      });
+    } catch (_) {}
+  }
+
+  String _rankName(int lvl) {
+    const names = ['Beginner', 'Beginner', 'Beginner',
+      'Apprentice', 'Apprentice', 'Intermediate',
+      'Intermediate', 'Intermediate', 'Expert', 'Expert'];
+    return lvl < names.length ? names[lvl] : 'Expert';
+  }
 
   void _logout() {
     showDialog(
@@ -25,8 +54,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         title: const Text('Log Out',
             style: TextStyle(fontWeight: FontWeight.bold)),
-        content:
-        const Text('Are you sure you want to log out of StockStart?'),
+        content: const Text('Are you sure you want to log out of StockStart?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
@@ -36,8 +64,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ElevatedButton(
             onPressed: () {
               Navigator.pop(ctx);
-              Navigator.pushNamedAndRemoveUntil(
-                  context, '/', (_) => false);
+              Navigator.pushNamedAndRemoveUntil(context, '/', (_) => false);
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.danger,
@@ -54,6 +81,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final progress = (_lessonsCompleted / _totalLessons).clamp(0.0, 1.0);
+    final xpToNext = (_level + 1) * 100 - _totalXp;
+
     return Scaffold(
       backgroundColor: AppTheme.background,
       appBar: AppBar(title: const Text('Profile')),
@@ -77,7 +107,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: AppTheme.primary.withOpacity(0.3),
+                          color: AppTheme.primary.withAlpha(77),
                           blurRadius: 12,
                           offset: const Offset(0, 4),
                         ),
@@ -100,9 +130,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       color: const Color(0xFFFEF3C7),
                       borderRadius: BorderRadius.circular(20),
                     ),
-                    child: Row(
+                    child: const Row(
                       mainAxisSize: MainAxisSize.min,
-                      children: const [
+                      children: [
                         Icon(Icons.star_rounded,
                             size: 14, color: AppColors.amber),
                         SizedBox(width: 4),
@@ -115,7 +145,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  const Text('Joined 2 years ago',
+                  const Text('Joined recently',
                       style: TextStyle(
                           fontSize: 12, color: AppTheme.textSecondary)),
                 ],
@@ -126,8 +156,63 @@ class _ProfileScreenState extends State<ProfileScreen> {
             // ── LEARNING SECTION ──
             _sectionHeader('Learning'),
             const SizedBox(height: 10),
+
+            // Level card
             Container(
               padding: const EdgeInsets.all(16),
+              margin: const EdgeInsets.only(bottom: 8),
+              decoration: BoxDecoration(
+                color: AppTheme.surface,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppTheme.primary.withAlpha(77)),
+                gradient: LinearGradient(
+                  colors: [
+                    AppTheme.primary.withAlpha(26),
+                    AppTheme.surface,
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 44, height: 44,
+                    decoration: BoxDecoration(
+                      color: AppTheme.primary.withAlpha(38),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(Icons.school_rounded,
+                        color: AppTheme.primary, size: 24),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Level $_level  ·  ${_rankName(_level)}',
+                          style: const TextStyle(
+                              color: AppTheme.primary,
+                              fontWeight: FontWeight.w800,
+                              fontSize: 16),
+                        ),
+                        Text(
+                          '$_totalXp XP total  ·  $xpToNext XP to next level',
+                          style: const TextStyle(
+                              color: AppTheme.textSecondary, fontSize: 12),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // Progress bar
+            Container(
+              padding: const EdgeInsets.all(16),
+              margin: const EdgeInsets.only(bottom: 8),
               decoration: BoxDecoration(
                 color: AppTheme.surface,
                 borderRadius: BorderRadius.circular(12),
@@ -145,7 +230,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               fontWeight: FontWeight.w500,
                               color: AppTheme.textPrimary)),
                       Text(
-                        '${(_learningProgress * 100).toInt()}%',
+                        '${(progress * 100).toInt()}%',
                         style: const TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
@@ -157,26 +242,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ClipRRect(
                     borderRadius: BorderRadius.circular(6),
                     child: LinearProgressIndicator(
-                      value: _learningProgress,
+                      value: progress,
                       minHeight: 10,
                       backgroundColor: AppTheme.border,
                       color: AppTheme.primary,
                     ),
                   ),
                   const SizedBox(height: 8),
-                  const Text('15 / 20 lessons completed',
-                      style: TextStyle(
-                          fontSize: 12, color: AppTheme.textSecondary)),
+                  Text(
+                    '$_lessonsCompleted / $_totalLessons lessons completed',
+                    style: const TextStyle(
+                        fontSize: 12, color: AppTheme.textSecondary),
+                  ),
                 ],
               ),
             ),
-            const SizedBox(height: 8),
+
             _settingsTile(
               icon: Icons.alarm_outlined,
               label: 'Learning reminders',
               trailing: Switch(
                 value: _learningReminders,
-                activeColor: AppTheme.primary,
+                activeTrackColor: AppTheme.primary,
                 onChanged: (val) =>
                     setState(() => _learningReminders = val),
               ),
@@ -191,7 +278,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               label: 'Notifications',
               trailing: Switch(
                 value: _notificationsEnabled,
-                activeColor: AppTheme.primary,
+                activeTrackColor: AppTheme.primary,
                 onChanged: (val) =>
                     setState(() => _notificationsEnabled = val),
               ),
@@ -201,19 +288,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
               label: 'Dark mode',
               trailing: Switch(
                 value: _darkModeEnabled,
-                activeColor: AppTheme.primary,
+                activeTrackColor: AppTheme.primary,
                 onChanged: (val) {
                   StockStartApp.of(context)?.toggleTheme(val);
-                  setState(() {});
                 },
               ),
             ),
             _settingsTile(
               icon: Icons.language_outlined,
               label: 'Language',
-              trailing: Row(
+              trailing: const Row(
                 mainAxisSize: MainAxisSize.min,
-                children: const [
+                children: [
                   Text('English',
                       style: TextStyle(
                           color: AppTheme.textSecondary, fontSize: 14)),
@@ -246,7 +332,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             const SizedBox(height: 12),
 
-            // ── LOG OUT ──
             _settingsTile(
               icon: Icons.logout_rounded,
               label: 'Log out',
@@ -260,8 +345,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
             const Center(
               child: Text(
-                'StockStart v1.0.0  •  CS-418 Lab 02',
-                style: TextStyle(fontSize: 11, color: AppTheme.textSecondary),
+                'StockStart v1.0.0  •  Final Project',
+                style:
+                TextStyle(fontSize: 11, color: AppTheme.textSecondary),
               ),
             ),
             const SizedBox(height: 16),

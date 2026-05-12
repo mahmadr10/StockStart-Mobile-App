@@ -65,8 +65,7 @@ class _SignupScreenState extends State<SignupScreen> {
       appBar: AppBar(
         backgroundColor: AppTheme.background,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_rounded,
-              color: AppTheme.textPrimary),
+          icon: const Icon(Icons.arrow_back_ios_rounded, color: AppTheme.textPrimary),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -85,8 +84,7 @@ class _SignupScreenState extends State<SignupScreen> {
                       letterSpacing: -0.5)),
               const SizedBox(height: 6),
               const Text('Join StockStart and start learning',
-                  style: TextStyle(
-                      color: AppTheme.textSecondary, fontSize: 14)),
+                  style: TextStyle(color: AppTheme.textSecondary, fontSize: 14)),
               const SizedBox(height: 36),
 
               _label('Username'),
@@ -109,8 +107,7 @@ class _SignupScreenState extends State<SignupScreen> {
                 decoration: _inputDec(
                   hint: 'Min. 6 characters',
                   icon: Icons.lock_outline_rounded,
-                  suffix: _eyeBtn(_obscure,
-                          () => setState(() => _obscure = !_obscure)),
+                  suffix: _eyeBtn(_obscure, () => setState(() => _obscure = !_obscure)),
                 ),
               ),
               const SizedBox(height: 18),
@@ -125,8 +122,7 @@ class _SignupScreenState extends State<SignupScreen> {
                 decoration: _inputDec(
                   hint: 'Re-enter password',
                   icon: Icons.lock_outline_rounded,
-                  suffix: _eyeBtn(_obscureConf,
-                          () => setState(() => _obscureConf = !_obscureConf)),
+                  suffix: _eyeBtn(_obscureConf, () => setState(() => _obscureConf = !_obscureConf)),
                 ),
               ),
               const SizedBox(height: 14),
@@ -135,23 +131,17 @@ class _SignupScreenState extends State<SignupScreen> {
 
               const SizedBox(height: 8),
               _loading
-                  ? const Center(
-                  child: CircularProgressIndicator(
-                      color: AppTheme.primary))
-                  : ElevatedButton(
-                  onPressed: _signUp,
-                  child: const Text('Create Account')),
+                  ? const Center(child: CircularProgressIndicator(color: AppTheme.primary))
+                  : ElevatedButton(onPressed: _signUp, child: const Text('Create Account')),
               const SizedBox(height: 22),
 
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const Text('Already have an account? ',
-                      style: TextStyle(
-                          color: AppTheme.textSecondary, fontSize: 14)),
+                      style: TextStyle(color: AppTheme.textSecondary, fontSize: 14)),
                   GestureDetector(
-                    onTap: () =>
-                        Navigator.pushReplacementNamed(context, '/login'),
+                    onTap: () => Navigator.pushReplacementNamed(context, '/login'),
                     child: const Text('Log In',
                         style: TextStyle(
                             color: AppTheme.primary,
@@ -168,16 +158,9 @@ class _SignupScreenState extends State<SignupScreen> {
     );
   }
 
-  Widget _label(String t) => Text(t,
-      style: const TextStyle(
-          color: AppTheme.textPrimary,
-          fontSize: 13,
-          fontWeight: FontWeight.w600));
+  Widget _label(String t) => Text(t, style: const TextStyle(color: AppTheme.textPrimary, fontSize: 13, fontWeight: FontWeight.w600));
 
-  InputDecoration _inputDec(
-      {required String hint,
-        required IconData icon,
-        Widget? suffix}) =>
+  InputDecoration _inputDec({required String hint, required IconData icon, Widget? suffix}) =>
       InputDecoration(
         hintText: hint,
         prefixIcon: Icon(icon, color: AppTheme.textSecondary),
@@ -185,10 +168,7 @@ class _SignupScreenState extends State<SignupScreen> {
       );
 
   Widget _eyeBtn(bool obscured, VoidCallback onTap) => IconButton(
-    icon: Icon(
-      obscured ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-      color: AppTheme.textSecondary,
-    ),
+    icon: Icon(obscured ? Icons.visibility_off_outlined : Icons.visibility_outlined, color: AppTheme.textSecondary),
     onPressed: onTap,
   );
 
@@ -204,10 +184,7 @@ class _SignupScreenState extends State<SignupScreen> {
       children: [
         const Icon(Icons.error_outline, color: AppTheme.danger, size: 16),
         const SizedBox(width: 8),
-        Expanded(
-            child: Text(msg,
-                style: const TextStyle(
-                    color: AppTheme.danger, fontSize: 13))),
+        Expanded(child: Text(msg, style: const TextStyle(color: AppTheme.danger, fontSize: 13))),
       ],
     ),
   );

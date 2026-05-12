@@ -21,8 +21,11 @@ class Trade {
   double get totalValue => quantity * priceAtTrade;
 
   Map<String, dynamic> toMap() => {
-    'id': id, 'ticker': ticker, 'stockName': stockName,
-    'type': type, 'quantity': quantity,
+    'id': id,
+    'ticker': ticker,
+    'stockName': stockName,
+    'type': type,
+    'quantity': quantity,
     'priceAtTrade': priceAtTrade,
     'timestamp': timestamp.toIso8601String(),
   };
@@ -36,4 +39,18 @@ class Trade {
     priceAtTrade: (m['priceAtTrade'] as num).toDouble(),
     timestamp:    DateTime.parse(m['timestamp'] as String),
   );
+}
+
+class Portfolio {
+  final Map<String, int> holdings;   // ticker -> quantity
+  final double virtualBalance;
+  final double initialBalance;
+
+  Portfolio({
+    required this.holdings,
+    required this.virtualBalance,
+    this.initialBalance = 10000.0,
+  });
+
+  double get totalInvested => initialBalance - virtualBalance;
 }

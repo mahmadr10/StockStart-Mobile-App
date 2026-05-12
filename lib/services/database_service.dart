@@ -15,6 +15,10 @@ class DatabaseService {
   static double?      _webBalance;
   static List<Trade>  _webTrades = [];
   static Map<String, String> _webUsers = {"admin": "123456"};
+  
+  // Learning progress mocks
+  static int _webXp = 0;
+  static Set<String> _webDoneLessons = {};
 
   static Future<Database> get _database async {
     if (_db != null) return _db!;
@@ -30,13 +34,59 @@ class DatabaseService {
   }
 
   static Future<void> _create(Database db, int version) async {
-    await db.execute('CREATE TABLE users (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT UNIQUE, password TEXT)');
-    await db.execute('CREATE TABLE stocks (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, ticker TEXT UNIQUE, price REAL, change REAL, riskLevel TEXT, status TEXT, isInWatchlist INTEGER DEFAULT 0, marketCap REAL, peRatio REAL, volume REAL, high52w REAL, low52w REAL)');
-    await db.execute('CREATE TABLE trades (id INTEGER PRIMARY KEY AUTOINCREMENT, ticker TEXT, stockName TEXT, type TEXT, quantity INTEGER, priceAtTrade REAL, timestamp TEXT)');
-    await db.execute('CREATE TABLE portfolio (id INTEGER PRIMARY KEY, virtualBalance REAL)');
-    await db.execute('CREATE TABLE tips (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, body TEXT, category TEXT)');
+    await db.execute('''
+      CREATE TABLE users (
+        id       INTEGER PRIMARY KEY AUTOINCREMENT, 
+        username TEXT NOT NULL UNIQUE, 
+        password TEXT NOT NULL
+      )''');
+    await db.execute('''
+      CREATE TABLE stocks (
+        id            INTEGER PRIMARY KEY AUTOINCREMENT, 
+        name          TEXT, 
+        ticker        TEXT NOT NULL UNIQUE, 
+        price         REAL, 
+        change        REAL, 
+        riskLevel     TEXT, 
+        status        TEXT, 
+        isInWatchlist INTEGER DEFAULT 0, 
+        marketCap     REAL, 
+        peRatio       REAL, 
+        volume        REAL, 
+        high52w       REAL, 
+        low52w        REAL
+      )''');
+    await db.execute('''
+      CREATE TABLE trades (
+        id           INTEGER PRIMARY KEY AUTOINCREMENT, 
+        ticker       TEXT, 
+        stockName    TEXT, 
+        type         TEXT, 
+        quantity     INTEGER, 
+        priceAtTrade REAL, 
+        timestamp    TEXT
+      )''');
+    await db.execute('''
+      CREATE TABLE portfolio (
+        id             INTEGER PRIMARY KEY, 
+        virtualBalance REAL NOT NULL,
+        xp             INTEGER DEFAULT 0,
+        doneLessons    TEXT DEFAULT ''
+      )''');
+    await db.execute('''
+      CREATE TABLE tips (
+        id       INTEGER PRIMARY KEY AUTOINCREMENT, 
+        title    TEXT NOT NULL, 
+        body     TEXT NOT NULL, 
+        category TEXT NOT NULL
+      )''');
 
-    await db.insert('portfolio', {'id': 1, 'virtualBalance': _startBalance});
+    await db.insert('portfolio', {
+      'id': 1, 
+      'virtualBalance': _startBalance,
+      'xp': 0,
+      'doneLessons': ''
+    });
     await _seedStocks(db);
     await _seedTips(db);
   }
@@ -142,31 +192,90 @@ class DatabaseService {
     return h;
   }
 
+  // ── LEARNING PROGRESS ────────────────────────────────────
+  static Future<int> getLearnXp() async {
+    if (kIsWeb) return _webXp;
+    final db = await _database;
+    final res = await db.query('portfolio', where: 'id=1');
+    return res.isEmpty ? 0 : (res.first['xp'] as int? ?? 0);
+  }
+
+  static Future<void> setLearnXp(int xp) async {
+    if (kIsWeb) { _webXp = xp; return; }
+    final db = await _database;
+    await db.update('portfolio', {'xp': xp}, where: 'id=1');
+  }
+
+  static Future<Set<String>> getDoneLessons() async {
+    if (kIsWeb) return _webDoneLessons;
+    final db = await _database;
+    final res = await db.query('portfolio', where: 'id=1');
+    if (res.isEmpty) return {};
+    final String str = res.first['doneLessons'] as String? ?? '';
+    if (str.isEmpty) return {};
+    return str.split(',').toSet();
+  }
+
+  static Future<void> setDoneLessons(Set<String> lessons) async {
+    final String str = lessons.join(',');
+    if (kIsWeb) { _webDoneLessons = lessons; return; }
+    final db = await _database;
+    await db.update('portfolio', {'doneLessons': str}, where: 'id=1');
+  }
+
+  static Future<List<Map<String, dynamic>>> getRecentDemoTrades() async {
+    final trades = await getAllTrades();
+    return trades.map((t) => {
+      'ticker': t.ticker,
+      'type': t.type,
+      'shares': t.quantity,
+      'price': t.priceAtTrade,
+    }).toList();
+  }
+
   // ── TIPS ──
   static Future<List<Map<String, dynamic>>> getAllTips() async {
-    if (kIsWeb) return [{'id': 1, 'title': 'Diversify', 'body': 'Spread your risk.', 'category': 'Risk'}];
+    if (kIsWeb) return _getWebTips();
     final db = await _database;
     return await db.query('tips');
   }
 
   static Future<Map<String, dynamic>?> getDailyTip() async {
     final tips = await getAllTips();
-    return tips.isEmpty ? null : tips[DateTime.now().day % tips.length];
+    return tips.isNotEmpty ? tips[DateTime.now().day % tips.length] : null;
   }
 
   static List<Stock> _getSeedData() {
     return [
-      const Stock(name: 'Apple Inc.', ticker: 'AAPL', price: 189.30, change: 1.2, riskLevel: 'Low', status: 'Growth', isInWatchlist: true),
-      const Stock(name: 'NVIDIA', ticker: 'NVDA', price: 875.40, change: 3.8, riskLevel: 'High', status: 'Momentum', isInWatchlist: true),
-      const Stock(name: 'Tesla', ticker: 'TSLA', price: 172.50, change: -2.1, riskLevel: 'High', status: 'Volatile', isInWatchlist: true),
+      const Stock(name: 'Apple Inc.', ticker: 'AAPL', price: 189.30, change: 1.2, riskLevel: 'Low', status: 'Steady growth', isInWatchlist: true),
+      const Stock(name: 'NVIDIA Corp.', ticker: 'NVDA', price: 875.40, change: 3.8, riskLevel: 'High', status: 'Strong momentum', isInWatchlist: true),
+      const Stock(name: 'Microsoft', ticker: 'MSFT', price: 415.50, change: 0.8, riskLevel: 'Low', status: 'Stable giant', isInWatchlist: false),
+      const Stock(name: 'Tesla Inc.', ticker: 'TSLA', price: 172.50, change: -2.1, riskLevel: 'High', status: 'Volatile', isInWatchlist: true),
+      const Stock(name: 'Amazon.com', ticker: 'AMZN', price: 178.10, change: 1.5, riskLevel: 'Medium', status: 'Expanding', isInWatchlist: false),
+    ];
+  }
+
+  static List<Map<String, dynamic>> _getWebTips() {
+    return [
+      {'id': 1, 'title': 'Diversify Your Portfolio', 'body': 'Spreading investments across different sectors reduces risk.', 'category': 'Risk Management'},
+      {'id': 2, 'title': 'RSI Indicator', 'body': 'RSI above 70 suggests overbought, below 30 suggests oversold.', 'category': 'Technical Analysis'},
     ];
   }
 
   static Future<void> _seedStocks(Database db) async {
-    for (var s in _getSeedData()) await db.insert('stocks', s.toMap());
+    for (var s in _getSeedData()) {
+      await db.insert('stocks', s.toMap(), conflictAlgorithm: ConflictAlgorithm.ignore);
+    }
   }
 
   static Future<void> _seedTips(Database db) async {
-    await db.insert('tips', {'title': 'Diversify', 'body': 'Spread your risk.', 'category': 'Risk'});
+    final tips = [
+      {'title': 'Diversify Your Portfolio', 'body': 'Spreading investments across different sectors reduces risk.', 'category': 'Risk Management'},
+      {'title': 'RSI Indicator', 'body': 'RSI above 70 suggests overbought, below 30 suggests oversold.', 'category': 'Technical Analysis'},
+      {'title': 'Dollar-Cost Averaging', 'body': 'Invest a fixed amount regularly to smooth out market volatility.', 'category': 'Strategy'},
+    ];
+    for (final t in tips) {
+      await db.insert('tips', t);
+    }
   }
 }

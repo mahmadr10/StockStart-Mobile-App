@@ -21,14 +21,15 @@ void main() {
 
 class StockStartApp extends StatefulWidget {
   const StockStartApp({super.key});
-  static _StockStartAppState? of(BuildContext context) =>
-      context.findAncestorStateOfType<_StockStartAppState>();
+  
+  static StockStartAppState? of(BuildContext context) =>
+      context.findAncestorStateOfType<StockStartAppState>();
 
   @override
-  State<StockStartApp> createState() => _StockStartAppState();
+  State<StockStartApp> createState() => StockStartAppState();
 }
 
-class _StockStartAppState extends State<StockStartApp> {
+class StockStartAppState extends State<StockStartApp> {
   final _themeProvider = ThemeProvider();
 
   @override

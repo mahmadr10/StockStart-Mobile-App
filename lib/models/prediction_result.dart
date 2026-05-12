@@ -1,4 +1,5 @@
 // lib/models/prediction_result.dart
+
 class PredictionResult {
   final String trendDirection;   // "UP" | "DOWN" | "N/A"
   final double trendConfidence;  // 0.0 – 1.0
@@ -34,6 +35,9 @@ class PricePoint {
   const PricePoint({
     required this.date,
     required this.close,
-    this.open, this.high, this.low, this.volume,
+    this.open,
+    this.high,
+    this.low,
+    this.volume,
   });
 }
